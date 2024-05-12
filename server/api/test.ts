@@ -1,5 +1,6 @@
 import puppeteer, {Browser, Page} from "puppeteer";
 import {H3Event} from "h3";
+import SceneBuilder from "~/libs/builder";
 
 export default defineEventHandler(async (event: H3Event) => {
     const body = await readBody(event)
@@ -17,7 +18,17 @@ export default defineEventHandler(async (event: H3Event) => {
         await page.setViewport({width: 2048, height: 1024, deviceScaleFactor: 1});
         await page.goto("http://localhost:3000/render");
 
-        // await new Promise((r) => setTimeout(r, 4000))
+        await new Promise((r) => setTimeout(r, 4000))
+        const b = await page.evaluateHandle(() => {
+            if (typeof window !== "undefined") {
+                window.sceneBuilder = new SceneBuilder({sceneConfig: {texture: '123123'}, roomConfig: {walls: []}})
+            }
+
+            return window.sceneBuilder
+
+        })
+        console.log(b)
+
         // const win = await page.evaluateHandle(() => window)
         // const interval = setInterval(async () => {
         //     await eventStream.push(`Message @ ${1}`)

@@ -1,5 +1,7 @@
 <template>
-<div></div>
+<div>
+    {{test}}
+</div>
 </template>
 
 <script setup lang="ts">
@@ -18,7 +20,17 @@ const { Scene,
     SpotLight }  = THREE
 // init scene, renderer, camera, controls, etc
 
+declare global {
+    interface Window {
+        api?: any;
+    }
+}
+
+const test = ref('')
+
 onMounted(() => {
+    // window.sceneBuilder = new SceneBuilder(null)
+    // console.log(window?.sceneBuilder)
     const scene = new Scene();
     const sphereGeom = new SphereGeometry( 0.49, 64, 32 );
     const ball1 = new Mesh(
@@ -123,7 +135,12 @@ onMounted(() => {
         pathTracer.setScene( scene, camera );
 
     }
+
+    setTimeout(() => {
+        test.value = window.sceneBuilder
+    },1000)
 })
+
 onBeforeUnmount(() => {
     const canvas = document.getElementsByTagName('canvas')[0]
     canvas.remove()

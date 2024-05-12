@@ -1,9 +1,13 @@
 <template>
     <UContainer class="flex gap-4">
-        <UButton @click="onSend">Send</UButton>
+        <UButton @click="onSend">Get render</UButton>
 
-        <img v-if="img" :src="img" alt="render"/>
+
     </UContainer>
+
+    <u-container>
+        <img v-if="img" :src="img" alt="render"/>
+    </u-container>
 </template>
 
 <script setup lang="ts">
