@@ -1,5 +1,4 @@
 import puppeteer from "puppeteer";
-import {H3Event} from "h3";
 export default defineEventHandler(async () => {
 
     const browser = await puppeteer.launch({
