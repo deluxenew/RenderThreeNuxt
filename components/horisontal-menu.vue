@@ -3,10 +3,8 @@
 </template>
 
 <script setup lang="ts">
-const route = useRoute()
-
 const links = [{
-    label: 'Profile',
+    label: 'Main',
     icon: 'i-heroicons-home',
     to: '/'
 }, {
