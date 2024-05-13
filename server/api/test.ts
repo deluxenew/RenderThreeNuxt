@@ -16,30 +16,33 @@ export default defineEventHandler(async (event: H3Event) => {
         // const eventStream = createEventStream(event)
 
         await page.setViewport({width: 2048, height: 1024, deviceScaleFactor: 1});
-        await page.goto("http://localhost:3000/render");
+        await page.goto("http://localhost:3001");
+        await new Promise((r) => setTimeout(r, 3000))
 
-        await new Promise((r) => setTimeout(r, 4000))
-        const b = await page.evaluateHandle(() => {
-            if (typeof window !== "undefined") {
-                window.sceneBuilder = new SceneBuilder({sceneConfig: {texture: '123123'}, roomConfig: {walls: []}})
+        await page.evaluate(async () => {
+            // window.addEventListener('DOMContentLoaded', function () {
+            const THREE = window.THREE
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+            camera.position.z = 5;
+
+
+            function animate() {
+                requestAnimationFrame(animate);
+                cube.rotation.x += 0.02;
+                cube.rotation.y += 0.02;
+                renderer.render(scene, camera);
             }
 
-            return window.sceneBuilder
-
-        })
-        console.log(b)
-
-        // const win = await page.evaluateHandle(() => window)
-        // const interval = setInterval(async () => {
-        //     await eventStream.push(`Message @ ${1}`)
-        // }, 1000)
-        //
-        // eventStream.onClosed(async () => {
-        //     clearInterval(interval)
-        //     await eventStream.close()
-        // })
-
-        await new Promise((r) => setTimeout(r, 10000))
+            animate();
+        });
 
         let contents = await page.screenshot({encoding: 'base64'});
         await page.close()

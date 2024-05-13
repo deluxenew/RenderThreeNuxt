@@ -78,8 +78,8 @@ onMounted(() => {
 
 // set the environment map
     const texture = new GradientEquirectTexture();
-    if ("bottomColor" in texture) {
-        texture.bottomColor.set( 0xffffff );
+    if ("bottomColor" in texture && 'topColor' in texture) {
+        texture.topColor.set( 0xffffff );
         texture.bottomColor.set( 0x666666 );
     }
 
@@ -136,9 +136,9 @@ onMounted(() => {
 
     }
 
-    setTimeout(() => {
-        test.value = window.sceneBuilder
-    },1000)
+    // setTimeout(() => {
+    //     test.value = window.sceneBuilder
+    // },1000)
 })
 
 onBeforeUnmount(() => {
