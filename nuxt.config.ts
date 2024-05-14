@@ -9,5 +9,8 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true
     }
+  },
+  routeRules: {
+    '/api/**': { cors: true, headers: { 'access-control-allow-methods': 'GET' } },
   }
 })

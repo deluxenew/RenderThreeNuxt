@@ -26,7 +26,7 @@ async function onSend() {
     //     }
     // }
 
-    const data = await $fetch('/api/test', {
+    const data = await $fetch('http://localhost:3001/api/test', {
         method: 'post',
         body: {d: 213}
     })

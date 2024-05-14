@@ -1,5 +1,4 @@
 import type SceneBuilder from "#build/libs/builder";
-import * as THREE from "three";
 
 export {};
 
@@ -10,5 +9,8 @@ declare global {
         createCanvas: (document: any) => document,
         BABYLON: any
         THREE: any
+        GradientEquirectTexture: any
+        WebGLPathTracer: any
+        getScaledSettings: any
     }
 }
