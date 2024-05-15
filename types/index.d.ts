@@ -1,10 +1,11 @@
-import type SceneBuilder from "#build/libs/builder";
+import type BuilderApi from "#build/builder/builderApi";
 
 export {};
 
+
+
 declare global {
     interface Window {
-        sceneBuilder: SceneBuilder;
         md5: (v: string) => {},
         createCanvas: (document: any) => document,
         BABYLON: any
@@ -12,5 +13,6 @@ declare global {
         GradientEquirectTexture: any
         WebGLPathTracer: any
         getScaledSettings: any
+        BuilderApi: BuilderApi
     }
 }
