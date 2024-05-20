@@ -1,5 +1,6 @@
 import type BuilderApi from "#build/builder/builderApi";
 
+
 export {};
 
 
@@ -14,5 +15,6 @@ declare global {
         WebGLPathTracer: any
         getScaledSettings: any
         BuilderApi: BuilderApi
+
     }
 }

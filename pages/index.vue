@@ -11,14 +11,15 @@
 </template>
 
 <script setup lang="ts">
+
 defineOptions({
     name: 'IndexRender'
 })
 const img = ref('')
-// const eventSource = ref<EventSource>()
+const eventSource = ref<EventSource>()
 
 async function onSend() {
-    // eventSource.value = new EventSource('http://localhost:3000/websocket')
+    // eventSource.value = new EventSource('http://localhost:3000/api/test')
     //
     // if ("onmessage" in eventSource.value) {
     //     eventSource.value.onmessage = (event) => {
@@ -30,7 +31,7 @@ async function onSend() {
         method: 'post',
         body: {camera: {
                 position: {
-                    y: 10
+                    y: 3
                 }
             }}
     })
@@ -40,6 +41,5 @@ async function onSend() {
 
     // eventSource.value?.close()
 }
-
 </script>
 

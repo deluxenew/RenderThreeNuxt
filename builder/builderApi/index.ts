@@ -83,11 +83,55 @@ export default class BuilderApi implements BuilderServer.Api {
         this.configReactive = reactive(buildConfig)
     }
 
-    public getCamera(): PerspectiveCamera | undefined {
-        if (!this.configReactive) return;
+    public getCamera(): PerspectiveCamera  {
         const camera = new PerspectiveCamera();
-        camera.position.set(0, this.configReactive.camera.position.y, -5);
+        if (this.configReactive) camera.position.set(0, this.configReactive.camera.position.y, -5);
         camera.lookAt(0, 0, 0);
         return camera
+    }
+
+    public startRenderer(isPathTracing: boolean){
+        const scene = this.getScene()
+        const camera = this.getCamera();
+        const renderer = this.getRenderer()
+
+        function onResize() {
+            // update rendering resolution
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+
+            pathTracer.setScene(scene, camera);
+
+        }
+
+        document.body.appendChild(renderer.domElement);
+
+        const settings = window.getScaledSettings();
+        const pathTracer = isPathTracing ? new window.WebGLPathTracer(renderer) : renderer;
+        if ("renderScale" in pathTracer) {
+            pathTracer.renderScale = settings.renderScale;
+        }
+
+        pathTracer.tiles.setScalar(settings.tiles);
+        pathTracer.setScene(scene, camera);
+
+        onResize();
+
+        animate();
+
+        window.addEventListener('resize', onResize);
+
+        function animate() {
+            // if the camera position changes call "ptRenderer.reset()"
+            requestAnimationFrame(animate);
+            // update the camera and render one sample
+            pathTracer.renderSample();
+        }
     }
 }
