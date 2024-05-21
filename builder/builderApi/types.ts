@@ -3,7 +3,7 @@ import {PerspectiveCamera} from "three";
 
 export namespace BuilderServer {
     export interface Api {
-        getScene: () => Scene | undefined
+        getScene: () =>  Promise<Scene | undefined>
         getCamera: () => PerspectiveCamera | undefined
         getRenderer: () => WebGLRenderer
     }
