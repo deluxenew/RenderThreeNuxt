@@ -1,17 +1,30 @@
 import type {BuilderServer} from "./types";
 import {
     Scene,
-    SphereGeometry,
     MeshStandardMaterial,
     Mesh,
     BoxGeometry,
     PerspectiveCamera,
     ACESFilmicToneMapping,
     WebGLRenderer,
-    SpotLight, Object3D
+    Color,
+    Object3D,
+    RepeatWrapping,
+    NearestFilter,
+    MathUtils,
+    CubeTextureLoader,
+    CubeReflectionMapping,
+    Vector2,
+    ImageLoader
 } from 'three'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import type {BuildRequest} from "~/types/requestTypes";
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import type {BuildRequest} from "~/types/requestTypes"
+
+
+interface InnerObject extends Object3D {
+    material?: MeshStandardMaterial
+    children: InnerObject[]
+}
 
 export default class BuilderApi implements BuilderServer.Api {
 
@@ -26,69 +39,149 @@ export default class BuilderApi implements BuilderServer.Api {
     public async getScene(): Promise<Scene | undefined> {
         if (!this.configReactive) return;
         const scene = new Scene()
-        const sphereGeom = new SphereGeometry(0.49, 64, 32);
-        const ball1 = new Mesh(
-            sphereGeom,
-            new MeshStandardMaterial({
-                color: '#e91e63',
-                roughness: 0.25,
-                metalness: 1,
-            })
-        );
-        const ball2 = new Mesh(
-            sphereGeom,
-            new MeshStandardMaterial({
-                color: '#ff9800',
-                roughness: 0.1,
-                metalness: 1,
-            })
-        );
-        ball2.castShadow = true
 
-        const material = new MeshStandardMaterial({
-            color: '#2196f3',
-            roughness: 0.2,
-            metalness: 0,
-        })
-// material.castShadow = false
-        const ball3 = new Mesh(
-            sphereGeom,
-            material
-        );
-
-        ball3.castShadow = false
-        const ground = new Mesh(
-            new BoxGeometry(3.5, 0.1, 1.5),
-            new MeshStandardMaterial(),
-        );
-        ground.receiveShadow = true
-        const newLight = new SpotLight(0x2196f3, 2);
-
-        ball1.position.x = -1;
-        ball3.position.x = 1;
-        ground.position.y = -0.54;
         const loader = new GLTFLoader()
 
         const gltf = await loader.loadAsync('room.glb')
+        const bottom1 = await loader.loadAsync('400.glb')
+
+        const bottom2 = await loader.loadAsync('800.glb')
+        const top1 = await loader.loadAsync('400u.glb')
+        const top2 = await loader.loadAsync('800u.glb')
+        const tabletop = await loader.loadAsync('tabletop.glb')
         if (gltf) {
             console.log(gltf)
-            let sofa
+
             // gltf.scene.scale.set(0.5, 0.5, 0.5)
-            // gltf.scene.children.forEach((obj) => {
-            //
-            //     if (['Sofa'].includes(obj.name)) {
-            //         // console.log(obj)
-            //         // // scene.add(obj)
-            //         //  = obj
-            //         sofa = obj
-            //
-            //     }
-            // })
-            if (gltf) scene.add(ball1, ball2, ball3, ground, newLight, gltf.scene);
+            console.log(gltf.scene.children.map(({name}) => name))
+            gltf.scene.children.forEach((obj: InnerObject) => {
 
+
+                if ([
+                    'Room',
+                    'Windows',
+                    'Windows_Frames',
+                    // 'Table',
+                    // 'Shelves',
+                    // 'Stereo_Table',
+                    // 'Sofa',
+                    // 'Player004',
+                    // 'Speakers',
+                    // 'Record001',
+                    // 'Record002',
+                    // 'Record003',
+                    // 'Record004',
+                    // 'Record005',
+                    // 'Chair',
+                    // 'Monitor001',
+                    // 'Vert',
+                    // 'Vert002',
+                    // 'Book0',
+                    // 'Coffee',
+                    // 'Frame',
+                    // 'Jar',
+                    // 'Keyboard',
+                    // 'Lamp',
+                    // 'Mouse',
+                    // 'Notebook',
+                    // 'abstract-expressionism-abstract-painting-acrylic-paint-1585325',
+                    // 'Plane001',
+                    // 'ReflectionCubemap',
+                    // 'IrradianceVolume'
+                ].includes(obj.name)) {
+                    if ( obj.name === 'Windows' && obj.material) {
+                        console.log(obj)
+                        obj.position.z += 0.05
+                        obj.material.color = new Color(0,0,0)
+                        obj.material.emissive = new Color(0.4,0.4,0.4)
+                    }
+
+                    if (obj.name === 'Room') {
+                        // obj.position.y = -1
+                        console.log(obj.children)
+                        const loader = new CubeTextureLoader()
+
+                        const urls = []
+                        for (let i = 0; i < 6; i++) {
+                            urls.push('plitkarepeat.png')
+                        }
+                        const texture = loader.load(urls)
+                        const newMaterial = new MeshStandardMaterial({
+                            map: texture
+                        })
+
+                        texture.wrapS = RepeatWrapping
+                        texture.wrapT = RepeatWrapping
+                        texture.magFilter = NearestFilter
+                        texture.mapping = CubeReflectionMapping
+                        texture.offset = new Vector2(2,2)
+                        texture.image = new ImageLoader().load('plitkarepeat.png')
+
+                        const timesToRepeatHorizontally = 6
+                        const timesToRepeatVertically = 6
+                        texture.repeat.set(timesToRepeatHorizontally, timesToRepeatVertically)
+
+                        obj.children.forEach((child) => {
+                            console.log(child)
+
+                            if (child?.material?.name === "White") {
+                                child.visible = false
+                                // child.material.color = new Color(0.9,0.9,0.9)
+                                // child.material.emissive = new Color(0.9,0.9,0.9)
+                                // return
+                            }
+
+                            const geometry = new BoxGeometry(0.2,9.8,9.8)
+                            const mesh = new Mesh(geometry, newMaterial)
+                            mesh.receiveShadow = true
+                            mesh.position.set(-4.28, 1, -0.8)
+                            const mesh2 = mesh.clone()
+                            mesh2.rotateY(MathUtils.degToRad(90))
+                            mesh2.position.set(-1.5, 1, -4.28)
+                            obj.add(mesh)
+                            obj.add(mesh2)
+                            child.material = newMaterial
+                        })
+
+                    }
+
+                } else obj.visible = false
+
+            })
+            const gltf2 = await loader.loadAsync('400.glb')
+            const gltfTop = await loader.loadAsync('800.glb')
+            gltf2.scene.scale.set(2,2,2)
+            gltf2.scene.position.set(-4, 0, 0 )
+
+            gltfTop.scene.scale.set(2,2,2)
+            gltfTop.scene.position.set(-4, 0,-1.21 )
+
+            bottom1.scene.scale.set(2,2,2)
+            bottom1.scene.position.set(-4, 0, 0 )
+
+            bottom2.scene.scale.set(2,2,2)
+            bottom2.scene.position.set(-4, 0,-1.21 )
+
+            top1.scene.scale.set(2,2,2)
+            top2.scene.scale.set(2,2,2)
+            tabletop.scene.scale.set(2,2,2)
+
+            top1.scene.position.set(-4, 2.5, 0 )
+            top2.scene.position.set(-4, 2.5,-1.21 )
+
+            tabletop.scene.position.set(-4, 1.63,-0.8)
+
+
+            if (gltf) {
+                scene.add(bottom1.scene);
+                scene.add(bottom2.scene);
+                scene.add(top1.scene);
+                scene.add(top2.scene);
+                scene.add(tabletop.scene);
+                scene.add(gltf.scene);
+
+            }
         }
-
-
 
 
         const texture = new window.GradientEquirectTexture();
@@ -98,7 +191,6 @@ export default class BuilderApi implements BuilderServer.Api {
         }
 
 
-
         texture.update();
 
         scene.environment = texture;
@@ -106,18 +198,20 @@ export default class BuilderApi implements BuilderServer.Api {
 
         return scene
     }
+
     constructor(buildConfig: BuildRequest) {
         this.configReactive = reactive(buildConfig)
     }
 
-    public getCamera(): PerspectiveCamera  {
+    public getCamera(): PerspectiveCamera {
         const camera = new PerspectiveCamera();
-        if (this.configReactive) camera.position.set(5, this.configReactive.camera.position.y || 2, 10);
-        camera.lookAt(0, 0, 0);
+        //this.configReactive.camera.position.y
+        if (this.configReactive) camera.position.set(4, 3, 3);
+        camera.lookAt(0, 2, 1);
         return camera
     }
 
-    public async startRenderer(isPathTracing: boolean){
+    public async startRenderer(isPathTracing: boolean) {
         const scene = await this.getScene()
         const camera = this.getCamera();
         const renderer = this.getRenderer()

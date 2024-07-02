@@ -2,17 +2,6 @@ import puppeteer, {Browser, Page} from "puppeteer";
 import {H3Event} from "h3";
 import type {BuildRequest} from "~/types/requestTypes";
 export default defineEventHandler(async (event: H3Event): Promise<string> => {
-    // const eventStream = createEventStream(event)
-    //
-    // const interval = setInterval(async () => {
-    //     await eventStream.push(`Message @ ${new Date().toLocaleTimeString()}`)
-    // }, 1000)
-    //
-    // eventStream.onClosed(async () => {
-    //     clearInterval(interval)
-    //     await eventStream.close()
-    // })
-
 
 
     const body = await readBody(event)
@@ -23,7 +12,7 @@ export default defineEventHandler(async (event: H3Event): Promise<string> => {
     const page: Page = await browser.newPage();
 
     try {
-        await page.setViewport({width: 2048, height: 1024, deviceScaleFactor: 1});
+        await page.setViewport({width: 800, height: 600, deviceScaleFactor: 1});
         await page.goto("http://localhost:3000/render");
         await new Promise((r) => setTimeout(r, 4000))
         await page.evaluate(async (config: BuildRequest): Promise<void> => {
@@ -34,7 +23,7 @@ export default defineEventHandler(async (event: H3Event): Promise<string> => {
         );
 
 
-        await new Promise((r) => setTimeout(r, 5400000))
+        await new Promise((r) => setTimeout(r, 800000))
 
         let contents = await page.screenshot({encoding: 'base64'});
         await page.close()

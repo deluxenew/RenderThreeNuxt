@@ -1,11 +1,10 @@
 <template>
-    <div>
-        <canvas id="canvas"/>
+    <div >
+<!--        <canvas class="h-[600px] w-[800px]" id="canvas"/>-->
     </div>
 </template>
 
 <script setup lang="ts">
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 
 onMounted(async () => {
@@ -13,13 +12,13 @@ onMounted(async () => {
 
 
     const builder = new window.BuilderApi({
-        camera: {
-            position: {
-                y: 3
-            }
-        }
+        // camera: {
+        //     position: {
+        //         y: 3
+        //     }
+        // }
     })
-    await builder.startRenderer(true)
+    await builder.startRenderer(false)
 
 
 
