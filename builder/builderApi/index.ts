@@ -1,27 +1,30 @@
 import type {BuilderServer} from "./types";
 import {
-    Scene,
-    MeshStandardMaterial,
-    Mesh,
-    BoxGeometry,
-    PerspectiveCamera,
     ACESFilmicToneMapping,
-    WebGLRenderer,
+    BoxGeometry, BufferGeometry,
     Color,
-    Object3D,
-    RepeatWrapping,
-    NearestFilter,
-    MathUtils,
-    CubeTextureLoader,
     CubeReflectionMapping,
+    CubeTextureLoader,
+    ImageLoader,
+    MathUtils,
+    Mesh,
+    MeshStandardMaterial,
+    NearestFilter,
+    Object3D,
+    PerspectiveCamera,
+    RepeatWrapping,
+    Scene, TextureLoader,
     Vector2,
-    ImageLoader
+    WebGLRenderer,
+    BufferAttribute,
+    MeshBasicMaterial
 } from 'three'
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import type {BuildRequest} from "~/types/requestTypes"
 
 
 interface InnerObject extends Object3D {
+    geometry?: BufferGeometry
     material?: MeshStandardMaterial
     children: InnerObject[]
 }
@@ -89,11 +92,74 @@ export default class BuilderApi implements BuilderServer.Api {
                     // 'ReflectionCubemap',
                     // 'IrradianceVolume'
                 ].includes(obj.name)) {
+                    if ( obj.name === 'Windows_Frames' && obj.material) {
+                        obj.position.z -= 0.12
+                    }
                     if ( obj.name === 'Windows' && obj.material) {
-                        console.log(obj)
-                        obj.position.z += 0.05
+                        console.log(obj.geometry)
+                        obj.position.z -= 0.023
+
+
+                        // const loader = new TextureLoader()
+                        //
+                        //
+                        // const texture = loader.load('gorod.jpg')
+                        // console.log(texture)
+//                         const newMaterial = new MeshStandardMaterial({
+//                                 map: texture
+//                             })
+//
+// obj.material = newMaterial
+
+                        // obj.
                         obj.material.color = new Color(0,0,0)
                         obj.material.emissive = new Color(0.4,0.4,0.4)
+
+//
+//                         var quad_vertices =
+//                             [
+//                                 -30.0,  30.0, 0.0,
+//                                 30.0,  30.0, 0.0,
+//                                 30.0, -30.0, 0.0,
+//                                 -30.0, -30.0, 0.0
+//                             ];
+//
+//                         var quad_uvs =
+//                             [
+//                                 0.0, 0.0,
+//                                 1.0, 0.0,
+//                                 1.0, 1.0,
+//                                 0.0, 1.0
+//                             ];
+//
+//                         var quad_indices =
+//                             [
+//                                 0, 2, 1, 0, 3, 2
+//                             ];
+//
+//                         const geometry = new BufferGeometry();
+//
+//                         var vertices = new Float32Array( quad_vertices );
+// // Each vertex has one uv coordinate for texture mapping
+//                         var uvs = new Float32Array( quad_uvs);
+// // Use the four vertices to draw the two triangles that make up the square.
+//                         var indices = new Uint32Array( quad_indices )
+//
+// // itemSize = 3 because there are 3 values (components) per vertex
+//                         geometry.setAttribute( 'position', obj.geometry?.attributes?.position as BufferAttribute );
+//                         geometry.setAttribute( 'uv', obj.geometry?.attributes?.uv as BufferAttribute );
+//                         geometry.setAttribute( 'normal', obj.geometry?.attributes?.normal as BufferAttribute );
+//                         geometry.setIndex( obj.geometry?.index as BufferAttribute );
+//
+// // Load the texture asynchronously
+//                         let sprite = new TextureLoader().load('gorod.jpg');
+//
+//                         var material = new MeshBasicMaterial( {color: 0xffffff });
+//                         var mesh = new Mesh( geometry, material );
+//                         mesh.position.z = -2;
+
+                        // obj.add(mesh);
+
                     }
 
                     if (obj.name === 'Room') {
@@ -166,8 +232,8 @@ export default class BuilderApi implements BuilderServer.Api {
             top2.scene.scale.set(2,2,2)
             tabletop.scene.scale.set(2,2,2)
 
-            top1.scene.position.set(-4, 2.5, 0 )
-            top2.scene.position.set(-4, 2.5,-1.21 )
+            top1.scene.position.set(-4, 3, 0 )
+            top2.scene.position.set(-4, 3,-1.21 )
 
             tabletop.scene.position.set(-4, 1.63,-0.8)
 
@@ -204,10 +270,10 @@ export default class BuilderApi implements BuilderServer.Api {
     }
 
     public getCamera(): PerspectiveCamera {
-        const camera = new PerspectiveCamera();
+        const camera = new PerspectiveCamera(45);
         //this.configReactive.camera.position.y
-        if (this.configReactive) camera.position.set(4, 3, 3);
-        camera.lookAt(0, 2, 1);
+        if (this.configReactive) camera.position.set(2.5, 3.3, 1.5);
+        camera.lookAt(0, 2.8, 0);
         return camera
     }
 
