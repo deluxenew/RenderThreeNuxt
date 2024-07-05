@@ -1,13 +1,16 @@
-import type {BuilderServer} from "./types";
+import * as THREE from 'three'
 import {
     ACESFilmicToneMapping,
-    BoxGeometry, BufferGeometry,
+    BoxGeometry,
+    BufferGeometry,
     Color,
     CubeReflectionMapping,
-    CubeTextureLoader, DirectionalLight,
+    CubeTextureLoader,
+    DirectionalLight,
     ImageLoader,
     MathUtils,
     Mesh,
+    MeshLambertMaterial,
     MeshStandardMaterial,
     NearestFilter,
     Object3D,
@@ -15,9 +18,9 @@ import {
     RepeatWrapping,
     Scene,
     Vector2,
-    WebGLRenderer,
-    PointLight
+    WebGLRenderer
 } from 'three'
+import type {BuilderServer} from "./types";
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import type {BuildRequest} from "~/types/requestTypes"
 import getBoxBufferGeometry from "~/builder/builderApi/models/getBoxBufferGeometry";
@@ -25,7 +28,7 @@ import getBoxBufferGeometry from "~/builder/builderApi/models/getBoxBufferGeomet
 
 interface InnerObject extends Object3D {
     geometry?: BufferGeometry
-    material?: MeshStandardMaterial
+    material?: MeshStandardMaterial | MeshLambertMaterial
     children: InnerObject[]
 }
 
@@ -52,19 +55,31 @@ export default class BuilderApi implements BuilderServer.Api {
         const top1 = await loader.loadAsync('400u.glb')
         const top2 = await loader.loadAsync('800u.glb')
         const tabletop = await loader.loadAsync('tabletop.glb')
-        const shadowLight = new DirectionalLight(0xffffff, 0.6)
-        shadowLight.position.set(2.1,0,0)
+        const shadowLight = new THREE.AmbientLight(0xffffff, 15.7)
+        const shadowLight2 = new THREE.DirectionalLight(0xffffff, 0.5)
+        // shadowLight.rotation.set(-Math.PI /2,0,0)
+        shadowLight2.position.set(7,4,0)
+        shadowLight.position.set(2,3,0)
+        // shadowLightr.position.set(1,3,0)
+
         shadowLight.castShadow = true
-        shadowLight.shadow.camera.left = -50
-        shadowLight.shadow.camera.right = 50
-        shadowLight.shadow.camera.top = 50
-        shadowLight.shadow.camera.bottom = -50
-        shadowLight.shadow.camera.near = 1
-        shadowLight.shadow.radius = 1
-        shadowLight.shadow.bias = -0.0001
-        shadowLight.shadow.camera.far = 1000
-        shadowLight.shadow.mapSize.width = 2048 // default is 512
-        shadowLight.shadow.mapSize.height = 2048 // default is 512
+
+
+
+        shadowLight2.shadow.camera.left = -50
+        shadowLight2.shadow.camera.right = 50
+        shadowLight2.shadow.camera.top = 50
+        shadowLight2.shadow.camera.bottom = -50
+        // shadowLight2.shadow.camera.near = 1
+        shadowLight2.shadow.radius = 5
+        shadowLight2.shadow.bias = -0.0001
+        shadowLight2.shadow.camera.far = 1000
+        shadowLight2.shadow.mapSize.width = 50 // default is 512
+        shadowLight2.shadow.mapSize.height = 50 // default is 512
+
+        // const shadowLight2 = shadowLight.clone()
+        // shadowLight2.position.set(3,2,0)
+
 
         // const spotLight = new PointLight(0xffffff, 0.5)
         // spotLight.name = 'Spot Light'
@@ -73,11 +88,8 @@ export default class BuilderApi implements BuilderServer.Api {
         // spotLight.position.set(0, 5 , 0)
 
         if (gltf) {
-            console.log(gltf)
-
 
             // gltf.scene.scale.set(0.5, 0.5, 0.5)
-            console.log(gltf.scene.children.map(({name}) => name))
             gltf.scene.children.forEach((obj: InnerObject) => {
 
 
@@ -88,15 +100,14 @@ export default class BuilderApi implements BuilderServer.Api {
 
                 ].includes(obj.name)) {
                     if ( obj.name === 'Windows_Frames' && obj.material) {
-                        obj.position.z -= 0.12
+                        // obj.position.z -= 0.12
                     }
                     if ( obj.name === 'Windows' && obj.material) {
-                        console.log(obj.geometry)
-                        obj.position.z -= 0.031
+                        obj.position.z += 0.095
 
 
                         obj.material.color = new Color(0,0,0)
-                        obj.material.emissive = new Color(0.4,0.4,0.4)
+                        // obj.material.emissive = new Color(0.4,0.4,0.4)
 
                         const newMesh = getBoxBufferGeometry()
                         gltf.scene.add(newMesh)
@@ -104,49 +115,89 @@ export default class BuilderApi implements BuilderServer.Api {
 
                     if (obj.name === 'Room') {
                         // obj.position.y = -1
-                        console.log(obj.children)
                         const loader = new CubeTextureLoader()
 
-                        const urls = []
-                        for (let i = 0; i < 6; i++) {
-                            urls.push('plitkarepeat.png')
-                        }
-                        const texture = loader.load(urls)
-                        const newMaterial = new MeshStandardMaterial({
-                            map: texture
-                        })
 
-                        texture.wrapS = RepeatWrapping
-                        texture.wrapT = RepeatWrapping
-                        texture.magFilter = NearestFilter
-                        texture.mapping = CubeReflectionMapping
-                        texture.offset = new Vector2(2,2)
-                        texture.image = new ImageLoader().load('plitkarepeat.png')
-
-                        const timesToRepeatHorizontally = 6
-                        const timesToRepeatVertically = 6
-                        texture.repeat.set(timesToRepeatHorizontally, timesToRepeatVertically)
 
                         obj.children.forEach((child) => {
-                            console.log(child)
 
-                            if (child?.material?.name === "White") {
+                            if (child?.name === "Plane_2") {
+                                const urls = []
+                                for (let i = 0; i < 6; i++) {
+                                    urls.push('plitkarepeat.jpg')
+                                }
+                                const texture = loader.load(urls)
+                                const newMaterial = new MeshStandardMaterial({
+                                    map: texture
+                                })
+
+                                texture.wrapS = RepeatWrapping
+                                texture.wrapT = RepeatWrapping
+                                texture.magFilter = NearestFilter
+                                texture.mapping = CubeReflectionMapping
+                                texture.offset = new Vector2(2,2)
+
+
+
+                                const timesToRepeatHorizontally = 4
+                                const timesToRepeatVertically = 4
+                                texture.repeat.set(timesToRepeatHorizontally, timesToRepeatVertically)
+
                                 child.visible = false
-                                // child.material.color = new Color(0.9,0.9,0.9)
-                                // child.material.emissive = new Color(0.9,0.9,0.9)
-                                // return
+                                texture.image = new ImageLoader().load('plitkarepeat.jpg')
+                                const geometry = new BoxGeometry(0.2,9.8,9.8)
+                                const mesh = new Mesh(geometry, newMaterial)
+                                mesh.receiveShadow = true
+                                mesh.position.set(-4.2, 1, -0.8)
+                                const mesh2 = mesh.clone()
+                                mesh2.rotateY(MathUtils.degToRad(90))
+                                mesh2.position.set(-1, 1, -4.2)
+
+                                const mesh3 = mesh.clone()
+                                mesh3.rotateY(MathUtils.degToRad(180))
+                                mesh3.position.set(4.2, 1, -0.8)
+
+                                const mesh4 = mesh.clone()
+                                mesh4.rotateY(MathUtils.degToRad(-90))
+                                mesh4.position.set(-1, 1, 4.2)
+
+                                obj.add(mesh)
+                                obj.add(mesh2)
+                                obj.add(mesh3)
+                                obj.add(mesh4)
+                                child.material = newMaterial
+                            } else {
+                                const urlsfloor = []
+                                for (let i = 0; i < 6; i++) {
+                                    urlsfloor.push('plitkarepeat.png')
+                                }
+                                const texturefloor = loader.load(urlsfloor)
+                                const newMaterialfloor = new MeshStandardMaterial({
+                                    map: texturefloor
+                                })
+
+                                texturefloor.wrapS = RepeatWrapping
+                                texturefloor.wrapT = RepeatWrapping
+                                texturefloor.magFilter = NearestFilter
+                                texturefloor.mapping = CubeReflectionMapping
+                                texturefloor.offset = new Vector2(2,2)
+
+
+
+                                const timesToRepeatHorizontally = 4
+                                const timesToRepeatVertically = 4
+                                texturefloor.repeat.set(timesToRepeatHorizontally, timesToRepeatVertically)
+
+                                texturefloor.image = new ImageLoader().load('plitkarepeat.png')
+                                child.material = newMaterialfloor
+
+                                const cloneFloor = child.clone()
+                                cloneFloor.position.set(0, 5.5,0)
+                                cloneFloor.rotateX(MathUtils.degToRad(180))
+                                obj.add(cloneFloor)
+
                             }
 
-                            const geometry = new BoxGeometry(0.2,9.8,9.8)
-                            const mesh = new Mesh(geometry, newMaterial)
-                            mesh.receiveShadow = true
-                            mesh.position.set(-4.28, 1, -0.8)
-                            const mesh2 = mesh.clone()
-                            mesh2.rotateY(MathUtils.degToRad(90))
-                            mesh2.position.set(-1.5, 1, -4.3)
-                            obj.add(mesh)
-                            obj.add(mesh2)
-                            child.material = newMaterial
                         })
 
                     }
@@ -175,18 +226,60 @@ export default class BuilderApi implements BuilderServer.Api {
             top1.scene.position.set(-4.1, 3, 0 )
             top2.scene.position.set(-4.1, 3,-1.21 )
 
-            tabletop.scene.position.set(-4.2, 1.63,-0.8)
+            tabletop.scene.position.set(-4.15, 1.62,-0.81)
+            // shadowLight.target = tabletop.scene
+            // shadowLight2.target = tabletop.scene
+
+            console.log(top2.scene)
+            if (bottom1) {
+                [bottom1.scene, bottom2.scene,top1.scene, top2.scene].forEach((scene) => {
+                    scene.children[0].children.forEach((el: InnerObject) => {
+
+                        if (!el.name.includes("Facade")) return
+
+                        const texture = 'plitkarepeat1.png'
+
+                        const urls = []
+                        for (let i = 0; i < 6; i++) {
+                            urls.push(texture)
+                        }
+                        const refractionCube = new THREE.CubeTextureLoader().load( urls );
+                        refractionCube.mapping = THREE.CubeRefractionMapping;
+                        // refractionCube.wrapS = RepeatWrapping
+                        // refractionCube.wrapT = RepeatWrapping
+                        //
+                        // const timesToRepeatHorizontally = 4
+                        // const timesToRepeatVertically = 4
+                        // refractionCube.repeat.set(timesToRepeatHorizontally, timesToRepeatVertically)
+
+                        el.material =  new THREE.MeshLambertMaterial({
+                            color: 0x222222,
+                            refractionRatio: 2,
+                            envMap: refractionCube,
+                            // combine: THREE.MixOperation,
+                            reflectivity: 0.2
+
+                        })
+
+
+                        // el.material = getReflectionMaterial()
+                        el.material.needsUpdate = true
+                    })
+                })
+
+            }
 
 
             if (gltf) {
-                console.log(shadowLight)
                 scene.add(bottom1.scene);
                 scene.add(bottom2.scene);
                 scene.add(top1.scene);
                 scene.add(top2.scene);
                 scene.add(tabletop.scene);
                 scene.add(gltf.scene);
+                // scene.add(shadowLightr)
                 scene.add(shadowLight)
+                // scene.add(shadowLight2)
                 // scene.add(spotLight)
             }
         }
@@ -195,7 +288,7 @@ export default class BuilderApi implements BuilderServer.Api {
         const texture = new window.GradientEquirectTexture();
         if ("bottomColor" in texture && 'topColor' in texture) {
             texture.topColor.set(0xffffff);
-            texture.bottomColor.set(0x666666);
+            texture.bottomColor.set(0xffffff);
         }
 
 
@@ -261,6 +354,7 @@ export default class BuilderApi implements BuilderServer.Api {
         function animate() {
             // if the camera position changes call "ptRenderer.reset()"
             requestAnimationFrame(animate);
+
             // update the camera and render one sample
             if (isPathTracing) pathTracer.renderSample();
             else pathTracer.render(scene, camera)
