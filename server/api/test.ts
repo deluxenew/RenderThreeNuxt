@@ -1,7 +1,7 @@
 import puppeteer, {Browser, Page} from "puppeteer";
 import {H3Event} from "h3";
 import type {BuildRequest} from "~/types/requestTypes";
-export default defineEventHandler(async (event: H3Event): Promise<string> => {
+export default defineEventHandler(async (event: H3Event): Promise<void> => {
 
 
     const body = await readBody(event)
@@ -23,15 +23,15 @@ export default defineEventHandler(async (event: H3Event): Promise<string> => {
         );
 
 
-        await new Promise((r) => setTimeout(r, 30000))
+        await new Promise((r) => setTimeout(r, 5000000))
 
-        let contents = await page.screenshot({encoding: 'base64'});
+        await page.screenshot({path: 'render.png'});
         await page.close()
         await browser.close()
-        return contents
+        // return contents
     } catch (e) {
         await page.close()
         await browser.close()
-        return ''
+        // return ''
     }
 })
