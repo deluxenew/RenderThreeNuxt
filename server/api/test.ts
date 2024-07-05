@@ -23,7 +23,7 @@ export default defineEventHandler(async (event: H3Event): Promise<string> => {
         );
 
 
-        await new Promise((r) => setTimeout(r, 300000))
+        await new Promise((r) => setTimeout(r, 30000))
 
         let contents = await page.screenshot({encoding: 'base64'});
         await page.close()

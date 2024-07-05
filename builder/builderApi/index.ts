@@ -23,6 +23,7 @@ import {
 import type {BuilderServer} from "./types";
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import type {BuildRequest} from "~/types/requestTypes"
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import getBoxBufferGeometry from "~/builder/builderApi/models/getBoxBufferGeometry";
 
 
@@ -45,7 +46,30 @@ export default class BuilderApi implements BuilderServer.Api {
     public async getScene(): Promise<Scene | undefined> {
         if (!this.configReactive) return;
         const scene = new Scene()
-
+        const fbxLoader = new FBXLoader()
+        fbxLoader.load(
+            'fbx/SCENE.fbx',
+            (object) => {
+                object.traverse(function (child) {
+                    if ((child as THREE.Mesh).isMesh) {
+                        // (child as THREE.Mesh).material = material
+                        if ((child as THREE.Mesh).material) {
+                            ((child as THREE.Mesh).material as THREE.MeshBasicMaterial).transparent = false
+                        }
+                    }
+                })
+                object.scale.set(.001, .001, .001)
+                console.log(object)
+                scene.add(object)
+                console.log(scene)
+            },
+            (xhr) => {
+                console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+            },
+            (error) => {
+                console.log(error)
+            }
+        )
         const loader = new GLTFLoader()
 
         const gltf = await loader.loadAsync('room.glb')
@@ -55,7 +79,7 @@ export default class BuilderApi implements BuilderServer.Api {
         const top1 = await loader.loadAsync('400u.glb')
         const top2 = await loader.loadAsync('800u.glb')
         const tabletop = await loader.loadAsync('tabletop.glb')
-        const shadowLight = new THREE.AmbientLight(0xffffff, 15.7)
+        const shadowLight = new THREE.AmbientLight(0xffffff, 1.7)
         const shadowLight2 = new THREE.DirectionalLight(0xffffff, 0.5)
         // shadowLight.rotation.set(-Math.PI /2,0,0)
         shadowLight2.position.set(7,4,0)
@@ -230,7 +254,6 @@ export default class BuilderApi implements BuilderServer.Api {
             // shadowLight.target = tabletop.scene
             // shadowLight2.target = tabletop.scene
 
-            console.log(top2.scene)
             if (bottom1) {
                 [bottom1.scene, bottom2.scene,top1.scene, top2.scene].forEach((scene) => {
                     scene.children[0].children.forEach((el: InnerObject) => {
@@ -271,15 +294,15 @@ export default class BuilderApi implements BuilderServer.Api {
 
 
             if (gltf) {
-                scene.add(bottom1.scene);
-                scene.add(bottom2.scene);
-                scene.add(top1.scene);
-                scene.add(top2.scene);
-                scene.add(tabletop.scene);
-                scene.add(gltf.scene);
-                // scene.add(shadowLightr)
+                // scene.add(bottom1.scene);
+                // scene.add(bottom2.scene);
+                // scene.add(top1.scene);
+                // scene.add(top2.scene);
+                // scene.add(tabletop.scene);
+                // scene.add(gltf.scene);
+                // // scene.add(shadowLightr)
                 scene.add(shadowLight)
-                // scene.add(shadowLight2)
+                scene.add(shadowLight2)
                 // scene.add(spotLight)
             }
         }
@@ -307,8 +330,8 @@ export default class BuilderApi implements BuilderServer.Api {
     public getCamera(): PerspectiveCamera {
         const camera = new PerspectiveCamera(45);
         //this.configReactive.camera.position.y
-        if (this.configReactive) camera.position.set(2.5, 3.3, 1.5);
-        camera.lookAt(0, 2.8, 0);
+        if (this.configReactive) camera.position.set(30.5, 15.3, 32.5);
+        camera.lookAt(0, 0, 0);
         return camera
     }
 
