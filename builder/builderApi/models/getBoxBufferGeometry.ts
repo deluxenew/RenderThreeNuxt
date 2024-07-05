@@ -83,7 +83,7 @@ export default function () {
                             emissiveIntensity: 6,
                             // blendColor: 0xffffff,
                             // color: 0xffffff,
-                            map: texture,
+                            // map: texture,
                             // transparent: true,
                             // opacity: 0.99
                             })

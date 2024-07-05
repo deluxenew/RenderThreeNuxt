@@ -23,8 +23,8 @@ import {
 import type {BuilderServer} from "./types";
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import type {BuildRequest} from "~/types/requestTypes"
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import getBoxBufferGeometry from "~/builder/builderApi/models/getBoxBufferGeometry";
+import getRoom from "~/builder/builderApi/models/getRoom";
 
 
 interface InnerObject extends Object3D {
@@ -46,30 +46,7 @@ export default class BuilderApi implements BuilderServer.Api {
     public async getScene(): Promise<Scene | undefined> {
         if (!this.configReactive) return;
         const scene = new Scene()
-        const fbxLoader = new FBXLoader()
-        fbxLoader.load(
-            'fbx/SCENE.fbx',
-            (object) => {
-                object.traverse(function (child) {
-                    if ((child as THREE.Mesh).isMesh) {
-                        // (child as THREE.Mesh).material = material
-                        if ((child as THREE.Mesh).material) {
-                            ((child as THREE.Mesh).material as THREE.MeshBasicMaterial).transparent = false
-                        }
-                    }
-                })
-                object.scale.set(.001, .001, .001)
-                console.log(object)
-                scene.add(object)
-                console.log(scene)
-            },
-            (xhr) => {
-                console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
-            },
-            (error) => {
-                console.log(error)
-            }
-        )
+
         const loader = new GLTFLoader()
 
         const gltf = await loader.loadAsync('room.glb')
@@ -113,7 +90,8 @@ export default class BuilderApi implements BuilderServer.Api {
 
         if (gltf) {
 
-            // gltf.scene.scale.set(0.5, 0.5, 0.5)
+            scene.add(getRoom())
+            gltf.scene.scale.set(10, 10, 10)
             gltf.scene.children.forEach((obj: InnerObject) => {
 
 
@@ -123,9 +101,9 @@ export default class BuilderApi implements BuilderServer.Api {
                     'Windows_Frames',
 
                 ].includes(obj.name)) {
-                    if ( obj.name === 'Windows_Frames' && obj.material) {
-                        // obj.position.z -= 0.12
-                    }
+                    // if ( obj.name === 'Windows_Frames' && obj.material) {
+                    //     obj.position.z += .1
+                    // }
                     if ( obj.name === 'Windows' && obj.material) {
                         obj.position.z += 0.095
 
@@ -136,6 +114,8 @@ export default class BuilderApi implements BuilderServer.Api {
                         const newMesh = getBoxBufferGeometry()
                         gltf.scene.add(newMesh)
                     }
+
+
 
                     if (obj.name === 'Room') {
                         // obj.position.y = -1
@@ -185,10 +165,10 @@ export default class BuilderApi implements BuilderServer.Api {
                                 mesh4.rotateY(MathUtils.degToRad(-90))
                                 mesh4.position.set(-1, 1, 4.2)
 
-                                obj.add(mesh)
-                                obj.add(mesh2)
-                                obj.add(mesh3)
-                                obj.add(mesh4)
+                                // obj.add(mesh)
+                                // obj.add(mesh2)
+                                // obj.add(mesh3)
+                                // obj.add(mesh4)
                                 child.material = newMaterial
                             } else {
                                 const urlsfloor = []
@@ -229,23 +209,29 @@ export default class BuilderApi implements BuilderServer.Api {
                 } else obj.visible = false
 
             })
-            const gltf2 = await loader.loadAsync('400.glb')
-            const gltfTop = await loader.loadAsync('800.glb')
-            gltf2.scene.scale.set(2,2,2)
-            gltf2.scene.position.set(-4, 0, 0 )
+            // const gltf2 = await loader.loadAsync('400.glb')
+            // const gltfTop = await loader.loadAsync('800.glb')
+            gltf.scene.position.set(-40, 0, 40)
+            //
+            // gltf2.scene.scale.set(10,10,10)
+            // gltf2.scene.position.set(-10, 0, 0 )
+            // gltf2.scene.rotateY(Math.PI)
+            //
+            //
+            // gltfTop.scene.scale.set(10,10,10)
+            // gltfTop.scene.position.set(-4, 0,-1.21 )
 
-            gltfTop.scene.scale.set(2,2,2)
-            gltfTop.scene.position.set(-4, 0,-1.21 )
+            bottom1.scene.scale.set(10,10,10)
+            bottom1.scene.position.set(-14, 0, 0)
+            bottom1.scene.rotateY(-Math.PI /2)
 
-            bottom1.scene.scale.set(2,2,2)
-            bottom1.scene.position.set(-4, 0, 0 )
+            bottom2.scene.scale.set(10,10,10)
+            bottom2.scene.position.set(-8, 0,0 )
+            bottom2.scene.rotateY(-Math.PI /2)
 
-            bottom2.scene.scale.set(2,2,2)
-            bottom2.scene.position.set(-4, 0,-1.21 )
-
-            top1.scene.scale.set(2,2,2)
-            top2.scene.scale.set(2,2,2)
-            tabletop.scene.scale.set(2,2,2)
+            top1.scene.scale.set(10,10,10)
+            top2.scene.scale.set(10,10,10)
+            tabletop.scene.scale.set(10,10,10)
 
             top1.scene.position.set(-4.1, 3, 0 )
             top2.scene.position.set(-4.1, 3,-1.21 )
@@ -294,12 +280,12 @@ export default class BuilderApi implements BuilderServer.Api {
 
 
             if (gltf) {
-                // scene.add(bottom1.scene);
-                // scene.add(bottom2.scene);
-                // scene.add(top1.scene);
-                // scene.add(top2.scene);
-                // scene.add(tabletop.scene);
-                // scene.add(gltf.scene);
+                scene.add(bottom1.scene);
+                scene.add(bottom2.scene);
+                scene.add(top1.scene);
+                scene.add(top2.scene);
+                scene.add(tabletop.scene);
+                scene.add(gltf.scene);
                 // // scene.add(shadowLightr)
                 scene.add(shadowLight)
                 scene.add(shadowLight2)
@@ -330,8 +316,8 @@ export default class BuilderApi implements BuilderServer.Api {
     public getCamera(): PerspectiveCamera {
         const camera = new PerspectiveCamera(45);
         //this.configReactive.camera.position.y
-        if (this.configReactive) camera.position.set(30.5, 15.3, 32.5);
-        camera.lookAt(0, 0, 0);
+        if (this.configReactive) camera.position.set(-30, 20, 30.5);
+        camera.lookAt(0, 2.8, 0);
         return camera
     }
 

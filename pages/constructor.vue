@@ -18,7 +18,7 @@ onMounted(async () => {
         //     }
         // }
     })
-    await builder.startRenderer(true)
+    await builder.startRenderer(false)
 
 
 
