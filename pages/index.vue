@@ -27,7 +27,7 @@ async function onSend() {
     //     }
     // }
 
-    const data = await $fetch('http://localhost:3000/api/test', {
+    const {data} = await useFetch('/api/test', {
         method: 'post',
         body: {camera: {
                 position: {
@@ -35,7 +35,7 @@ async function onSend() {
                 }
             }}
     })
-    if (typeof data === "string") {
+    if (typeof data.value === "string") {
         img.value = `data:image/png;base64, ${data}`
     }
 
